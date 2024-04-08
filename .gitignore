@@ -1,0 +1,9 @@
+# object files
+*.o
+
+# assembly files
+*.S
+
+# VSCode stuff
+.vscode/
+.cache/
