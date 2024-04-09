@@ -6,7 +6,23 @@
 #include <sys/stat.h>
 #include <cstring>
 
+#define IS_FUNCTION_TOKEN(t) \
+  t.Type == TokenTypes::OpLabelU8 || t.Type == TokenTypes::OpLabelU16 \
+  || t.Type == TokenTypes::OpLabelU32 || t.Type == TokenTypes::OpLabelU64 \
+  || t.Type == TokenTypes::OpLabelVoid
+
+std::ofstream outfile;
+std::ifstream fptr;
+
 // making a compiler is ezzzz
+
+static void die(void)
+{
+  std::cerr << "Failed to compile!\n";
+  outfile.close();
+  fptr.close();
+  exit(1);
+}
 
 static int file_exists(const char * file)
 {
@@ -22,17 +38,40 @@ static void show_usage()
   __builtin_unreachable();
 }
 
+static void detect_duplicate_functions(const std::vector<Token>&list)
+{
+  std::vector<Token>functions;
+  for(int i = 0; i < list.size(); i++)
+  {
+    const Token &t = list.at(i);
+    if(IS_FUNCTION_TOKEN(t))
+    {
+      functions.push_back(t);
+    }
+  }
+  for(int i = 1; i < functions.size(); i++)
+  {
+    std::string func = functions.at(i).Value.value();
+    std::string func2 = functions.at(i - 1).Value.value();
+    if(!func.compare(func2))
+    {
+      std::cout << "Error: Detected function duplicates! (" << func2 << ")\n";
+      die();
+    }
+  }
+}
+
 static std::string Tokens2Asm(const std::vector<Token>&list)
 {
   std::stringstream out;
   TokenTypes data_type = TokenTypes::OpUnknown;
   int label_pos;
-  out << "section .text\n";
+  out << "; Compiled by CASM\n";
   out << "global _start\n";
   
   for(int i = 0; i < list.size(); i++)
   {
-    const Token & t = list.at(i);
+    const Token &t = list.at(i);
     if(t.Type == TokenTypes::OpExit)
     {
       out << "  mov rax, 60\n";
@@ -91,7 +130,7 @@ int main(int argc, char * argv[])
     return 1;
   }
   char * out = (char *)"out.S";
-  std::ifstream fptr(argv[1]);
+  fptr.open(argv[1]);
   for(int i = 0; i < argc; i++)
   {
     if(!strcmp(argv[i], "-o"))
@@ -101,7 +140,6 @@ int main(int argc, char * argv[])
       break;
     }
   }
-  std::ofstream outfile;
   outfile.open(out);
   // get tokens
   std::string line;
@@ -111,10 +149,12 @@ int main(int argc, char * argv[])
     char * cstr = line.data();
     if(Lexer::GetTokens(cstr, tokens))
     {
+      outfile.close();
       fptr.close();
       return 1;
     }
   }
+  detect_duplicate_functions(tokens);
   outfile << Tokens2Asm(tokens);
   // now generate the file 
   fptr.close();

@@ -4,6 +4,7 @@
 #include <vector>
 #include <optional>
 #include <cstdint>
+#include <string>
 
 enum class TokenTypes
 {
@@ -19,20 +20,16 @@ enum class TokenTypes
   OpLabelU32,
   OpLabelU16,
   OpLabelU8,
-  OpLabelS64,
-  OpLabelS32,
-  OpLabelS16,
-  OpLabelS8,
   OpLabelVoid,
   // misc
   OpComment,
-  OpFunction
+  OpFunction,
 };
 
 enum class TokenAttributes
 {
   NoAttributes,
-  AttributeString,
+  AttributeString
 };
 
 struct Token

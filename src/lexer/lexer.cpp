@@ -23,7 +23,7 @@ static bool operand_is_number(const std::string &op)
   return true;
 }
 
-static void line_point(std::string & str)
+static void line_point(std::string &str)
 {
   std::cerr << str << std::endl;
   std::cerr << "! ";
@@ -106,6 +106,12 @@ int Lexer::GetTokens(char * line, std::vector<Token>&token_list)
     {
       token_str = strtok(0, " ");
       token_list.push_back({.Type = TokenTypes::OpLabelVoid, .Value = token_str, .Attributes = TokenAttributes::NoAttributes});
+    }
+    else if(!strncmp(token_str, "//", 2))
+    {
+      token_str = strtok(0, " ");
+      token_list.push_back({.Type = TokenTypes::OpComment, .Value = line_str, .Attributes = TokenAttributes::NoAttributes});
+      return 0;
     }
     else 
     {

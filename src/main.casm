@@ -1,5 +1,8 @@
-u64 test_func:
-  return 0
+u32 get_hotdogs:
+  //mov rax, 5
+  return 5
 
+// This is the start of the program
 void _start:
+  get_hotdogs
   exit 0
